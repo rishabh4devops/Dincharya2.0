@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Dincharya - Personal Routine & Health</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+    <div id="onboardingOverlay" class="overlay">
+        
+        <div id="stepProfile" class="modal">
+            <h1 class="brand-title">Dincharya</h1>
+            <p class="step-subtitle">Set up your profile</p>
+            
+            <div class="input-container">
+                <label for="nameInput">Full Name</label>
+                <input type="text" id="nameInput" placeholder="e.g. Rishabh Srivastava">
+                
+                <label for="ageInput">Age</label>
+                <input type="number" id="ageInput" placeholder="e.g. 28">
+                
+                <label for="bloodInput">Blood Group</label>
+                <input type="text" id="bloodInput" placeholder="e.g. B+">
+                
+                <label for="emailInput">Email Address</label>
+                <input type="email" id="emailInput" placeholder="e.g. rishabh@example.com">
+                
+                <label for="photoInput" class="custom-file-upload">
+                    Upload Profile Picture
+                    <input type="file" id="photoInput" accept="image/*">
+                </label>
+            </div>
+            
+            <button id="btnProfileNext" class="primary-btn">Continue</button>
+        </div>
+
+        <div id="stepMedical" class="modal hidden">
+            <h2 class="section-title">Health Setup</h2>
+            <p class="step-subtitle">Optional: Track a specific health metric</p>
+            
+            <div class="input-container">
+                <label for="conditionNameInput">Condition / Metric Name</label>
+                <input type="text" id="conditionNameInput" placeholder="e.g. Blood Pressure">
+                
+                <label for="conditionValueInput">Current Reading</label>
+                <input type="text" id="conditionValueInput" placeholder="e.g. 120/80">
+            </div>
+            
+            <button id="btnMedicalFinish" class="primary-btn">Enter App</button>
+        </div>
+    </div>
+
+    <main id="mainApp" class="app-container hidden">
+        
+        <header class="app-header">
+            <div class="user-meta">
+                <h2 id="userGreeting">Good Day</h2>
+                <p id="currentDateDisplay" class="date-text"></p>
+            </div>
+            <div class="profile-container">
+                <img id="userProfileImage" class="profile-avatar" src="" alt="Profile">
+            </div>
+        </header>
+
+        <section id="tabToday" class="content-tab">
+            <div class="quote-card">
+                <p id="dailyQuoteText"></p>
+            </div>
+
+            <div class="status-overview">
+                <div class="metric-box">
+                    <span class="metric-value" id="completionPercent">0%</span>
+                    <span class="metric-label">Completed</span>
+                </div>
+                <div class="metric-box">
+                    <span class="metric-value">🔥 <span id="streakCount">0</span></span>
+                    <span class="metric-label">Day Streak</span>
+                </div>
+            </div>
+
+            <div class="feature-card">
+                <h3>Daily Flow</h3>
+                <div class="flow-list">
+                    <div class="flow-item" data-index="0">🌅 Morning Setup</div>
+                    <div class="flow-item" data-index="1">💼 Work & Focus</div>
+                    <div class="flow-item" data-index="2">💪 Health & Energy</div>
+                    <div class="flow-item" data-index="3">📘 Personal Growth</div>
+                    <div class="flow-item" data-index="4">🌙 Evening Shutdown</div>
+                </div>
+            </div>
+
+            <div class="feature-card">
+                <h3>Energy Level</h3>
+                <input type="range" id="energySlider" min="0" max="100" value="50">
+                <div class="slider-labels">
+                    <span>Low</span>
+                    <span id="energyValueText">50%</span>
+                    <span>High</span>
+                </div>
+            </div>
+
+            <div class="feature-card">
+                <h3>Daily Reflection</h3>
+                <textarea id="reflectionTextArea" placeholder="What's on your mind today?"></textarea>
+            </div>
+        </section>
+
+        <section id="tabMedical" class="content-tab hidden">
+            <div class="feature-card">
+                <h3>Medical Insights</h3>
+                <div class="medical-header">
+                    <h4 id="activeConditionName">No condition tracked</h4>
+                    <p id="activeConditionLatest" class="muted-text"></p>
+                </div>
+                
+                <div class="chart-wrapper">
+                    <canvas id="healthHistoryChart"></canvas>
+                </div>
+
+                <div class="add-reading-section">
+                    <h4>Add New Reading</h4>
+                    <div class="inline-input">
+                        <input type="text" id="newReadingInput" placeholder="Value (e.g. 118/78)">
+                        <button id="btnAddReading">Add</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="tabCalendar" class="content-tab hidden">
+            <div class="feature-card">
+                <h3>Consistency Heatmap</h3>
+                <p class="muted-text">Track your progress over the last 28 days.</p>
+                <div id="heatmapGrid" class="heatmap-container"></div>
+                <div class="heatmap-legend">
+                    <span>Low</span>
+                    <div class="legend-dot" style="background: #111;"></div>
+                    <div class="legend-dot" style="background: #1a3a4a;"></div>
+                    <div class="legend-dot" style="background: #4cc9f0;"></div>
+                    <span>High</span>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <nav id="bottomNavigationBar" class="nav-bar hidden">
+        <button class="nav-item active" data-target="tabToday">🏠</button>
+        <button class="nav-item" data-target="tabMedical">🧬</button>
+        <button class="nav-item" data-target="tabCalendar">🗓</button>
+    </nav>
+
+    <script src="app.js"></script>
+</body>
+</html>
