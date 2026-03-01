@@ -1,77 +1,71 @@
 /**
- * DINCHARYA - CORE LOGIC
- * Manages State, Persistence, and Dynamic UI
+ * DINCHARYA CORE SCRIPT
+ * Comprehensive Logic for State & Persistence
  */
 
-const STORAGE_KEYS = {
-    STATE: "dincharya_app_state",
-    PROFILE: "dincharya_user_profile",
-    MEDICAL: "dincharya_medical_records",
-    STREAK: "dincharya_user_streak",
-    FLOW_PREFIX: "flow_day_",
-    ENERGY_PREFIX: "energy_day_",
-    REFLECTION_PREFIX: "reflection_day_"
+const KEYS = {
+    STATE: "dincharya_pwa_state",
+    USER: "dincharya_pwa_user",
+    MED: "dincharya_pwa_med",
+    STREAK: "dincharya_pwa_streak",
+    FLOW: "flow_",
+    ENERGY: "energy_",
+    REFL: "refl_"
 };
 
 const QUOTES = [
     "जो समय की कद्र करता है, समय उसकी कद्र करता है।",
     "हर दिन एक नया अवसर है।",
     "स्वयं पर विश्वास सबसे बड़ी शक्ति है।",
-    "अनुशासन स्वतंत्रता की जड़ है।",
-    "सफलता का रहस्य निरंतरता है।"
+    "अनुशासन स्वतंत्रता की जड़ है।"
 ];
 
-const TODAY_DATE_STR = new Date().toISOString().split("T")[0];
-let healthChartInstance = null;
+const ISO_TODAY = new Date().toISOString().split("T")[0];
+let activeChart = null;
 
-// Initialization
+// Initialize
 document.addEventListener("DOMContentLoaded", () => {
-    checkAppState();
-    setupEventListeners();
+    const currentState = localStorage.getItem(KEYS.STATE) || "step_profile";
+
+    if (currentState === "step_profile") {
+        toggleOverlay("stepProfile");
+    } else if (currentState === "step_medical") {
+        toggleOverlay("stepMedical");
+    } else {
+        runApp();
+    }
+
+    attachListeners();
 });
 
-function checkAppState() {
-    const currentState = localStorage.getItem(STORAGE_KEYS.STATE) || "onboarding_profile";
-
-    if (currentState === "onboarding_profile") {
-        renderOnboardingStep("stepProfile");
-    } else if (currentState === "onboarding_medical") {
-        renderOnboardingStep("stepMedical");
-    } else {
-        launchMainApp();
-    }
-}
-
-function renderOnboardingStep(stepId) {
+function toggleOverlay(id) {
     document.getElementById("onboardingOverlay").classList.remove("hidden");
     document.getElementById("stepProfile").classList.add("hidden");
     document.getElementById("stepMedical").classList.add("hidden");
-    document.getElementById(stepId).classList.remove("hidden");
+    document.getElementById(id).classList.remove("hidden");
 }
 
-function setupEventListeners() {
-    // Onboarding Buttons
-    document.getElementById("btnProfileNext").addEventListener("click", handleProfileSubmission);
-    document.getElementById("btnMedicalFinish").addEventListener("click", handleMedicalSubmission);
+function attachListeners() {
+    // Onboarding
+    document.getElementById("btnProfileNext").onclick = submitProfile;
+    document.getElementById("btnMedicalFinish").onclick = submitMedical;
 
-    // Dashboard Interactivity
-    document.getElementById("energySlider").addEventListener("input", updateEnergyDisplay);
-    document.getElementById("reflectionTextArea").addEventListener("input", saveReflection);
-    
-    // Medical Tab
-    document.getElementById("btnAddReading").addEventListener("click", addNewReading);
+    // Interaction
+    document.getElementById("sliderEnergy").oninput = handleEnergy;
+    document.getElementById("areaReflection").oninput = handleReflection;
+    document.getElementById("btnAddNewMed").onclick = pushMedValue;
 
-    // Navigation
+    // Tabs
     document.querySelectorAll(".nav-item").forEach(btn => {
-        btn.addEventListener("click", (e) => switchTab(e.currentTarget));
+        btn.onclick = (e) => switchTab(e.currentTarget);
     });
 }
 
-/** * ONBOARDING LOGIC
+/** * ONBOARDING
  */
 
-function handleProfileSubmission() {
-    const profileData = {
+function submitProfile() {
+    const profile = {
         name: document.getElementById("nameInput").value.trim(),
         age: document.getElementById("ageInput").value.trim(),
         blood: document.getElementById("bloodInput").value.trim(),
@@ -79,262 +73,182 @@ function handleProfileSubmission() {
         photo: ""
     };
 
-    if (!profileData.name || !profileData.age) {
-        alert("Please provide at least your name and age.");
-        return;
-    }
+    if (!profile.name || !profile.age) return alert("Please fill Name and Age");
 
-    const photoFile = document.getElementById("photoInput").files[0];
-    if (photoFile) {
+    const photoInput = document.getElementById("photoInput").files[0];
+    if (photoInput) {
         const reader = new FileReader();
         reader.onload = (e) => {
-            profileData.photo = e.target.result;
-            saveAndMoveToMedical(profileData);
+            profile.photo = e.target.result;
+            proceedToMedical(profile);
         };
-        reader.readAsDataURL(photoFile);
+        reader.readAsDataURL(photoInput);
     } else {
-        saveAndMoveToMedical(profileData);
+        proceedToMedical(profile);
     }
 }
 
-function saveAndMoveToMedical(data) {
-    localStorage.setItem(STORAGE_KEYS.PROFILE, JSON.stringify(data));
-    localStorage.setItem(STORAGE_KEYS.STATE, "onboarding_medical");
-    renderOnboardingStep("stepMedical");
+function proceedToMedical(data) {
+    localStorage.setItem(KEYS.USER, JSON.stringify(data));
+    localStorage.setItem(KEYS.STATE, "step_medical");
+    toggleOverlay("stepMedical");
 }
 
-function handleMedicalSubmission() {
-    const medName = document.getElementById("conditionNameInput").value.trim();
-    const medVal = document.getElementById("conditionValueInput").value.trim();
+function submitMedical() {
+    const name = document.getElementById("condNameInput").value.trim();
+    const val = document.getElementById("condValueInput").value.trim();
 
-    if (medName && medVal) {
-        const medRecord = {
-            name: medName,
-            history: [{ date: TODAY_DATE_STR, value: medVal }]
+    if (name && val) {
+        const med = {
+            title: name,
+            log: [{ day: ISO_TODAY, val: val }]
         };
-        localStorage.setItem(STORAGE_KEYS.MEDICAL, JSON.stringify(medRecord));
+        localStorage.setItem(KEYS.MED, JSON.stringify(med));
     }
 
-    localStorage.setItem(STORAGE_KEYS.STATE, "main_app");
-    launchMainApp();
+    localStorage.setItem(KEYS.STATE, "active");
+    runApp();
 }
 
-/** * MAIN APP INITIALIZATION
+/** * MAIN APP
  */
 
-function launchMainApp() {
+function runApp() {
     document.getElementById("onboardingOverlay").classList.add("hidden");
-    document.getElementById("mainApp").classList.remove("hidden");
-    document.getElementById("bottomNavigationBar").classList.remove("hidden");
+    document.getElementById("appContainer").classList.remove("hidden");
+    document.getElementById("appNav").classList.remove("hidden");
 
-    loadUserData();
-    loadDailyQuote();
-    initializeDayFlow();
-    initializeEnergyAndReflection();
-    updateOverallCompletion();
-    renderHeatmap();
+    loadSetup();
+    initFlow();
+    initHeatmap();
 }
 
-function loadUserData() {
-    const profile = JSON.parse(localStorage.getItem(STORAGE_KEYS.PROFILE)) || {};
-    document.getElementById("userGreeting").textContent = `Good Day, ${profile.name || 'User'}`;
-    document.getElementById("userProfileImage").src = profile.photo || "";
-    document.getElementById("currentDateDisplay").textContent = new Date().toDateString();
+function loadSetup() {
+    const user = JSON.parse(localStorage.getItem(KEYS.USER)) || {};
+    document.getElementById("displayGreeting").textContent = `Good Day, ${user.name || 'User'}`;
+    document.getElementById("displayAvatar").src = user.photo || "";
+    document.getElementById("displayDate").textContent = new Date().toDateString();
     
-    const streak = JSON.parse(localStorage.getItem(STORAGE_KEYS.STREAK)) || { count: 0 };
-    document.getElementById("streakCount").textContent = streak.count;
+    const dayQ = new Date().getDate() % QUOTES.length;
+    document.getElementById("quoteText").textContent = QUOTES[dayQ];
+
+    const streak = JSON.parse(localStorage.getItem(KEYS.STREAK)) || { count: 0 };
+    document.getElementById("valStreak").textContent = streak.count;
+
+    // Restore Energy/Reflection
+    const eng = localStorage.getItem(KEYS.ENERGY + ISO_TODAY) || 50;
+    document.getElementById("sliderEnergy").value = eng;
+    document.getElementById("labelEnergy").textContent = `${eng}%`;
+
+    document.getElementById("areaReflection").value = localStorage.getItem(KEYS.REFL + ISO_TODAY) || "";
 }
 
-function loadDailyQuote() {
-    const dayIndex = new Date().getDate() % QUOTES.length;
-    document.getElementById("dailyQuoteText").textContent = QUOTES[dayIndex];
-}
+function initFlow() {
+    const saved = JSON.parse(localStorage.getItem(KEYS.FLOW + ISO_TODAY)) || [];
+    const boxes = document.querySelectorAll(".flow-box");
 
-/** * DASHBOARD FEATURES
- */
-
-function initializeDayFlow() {
-    const flowData = JSON.parse(localStorage.getItem(STORAGE_KEYS.FLOW_PREFIX + TODAY_DATE_STR)) || [];
-    const flowItems = document.querySelectorAll(".flow-item");
-
-    flowItems.forEach(item => {
-        const idx = item.dataset.index;
-        if (flowData.includes(idx)) item.classList.add("completed");
-
-        item.onclick = () => {
-            item.classList.toggle("completed");
-            saveDayFlow();
+    boxes.forEach(box => {
+        if (saved.includes(box.dataset.idx)) box.classList.add("active-done");
+        box.onclick = () => {
+            box.classList.toggle("active-done");
+            saveFlow();
         };
     });
+    calcPct(saved.length);
 }
 
-function saveDayFlow() {
-    const completedIndices = [];
-    document.querySelectorAll(".flow-item.completed").forEach(item => {
-        completedIndices.push(item.dataset.index);
-    });
-
-    localStorage.setItem(STORAGE_KEYS.FLOW_PREFIX + TODAY_DATE_STR, JSON.stringify(completedIndices));
-    updateOverallCompletion();
+function saveFlow() {
+    const done = [...document.querySelectorAll(".flow-box.active-done")].map(b => b.dataset.idx);
+    localStorage.setItem(KEYS.FLOW + ISO_TODAY, JSON.stringify(done));
+    calcPct(done.length);
 }
 
-function updateOverallCompletion() {
-    const totalItems = 5;
-    const completedCount = document.querySelectorAll(".flow-item.completed").length;
-    const percentage = Math.round((completedCount / totalItems) * 100);
+function calcPct(count) {
+    const p = Math.round((count / 5) * 100);
+    document.getElementById("pctComplete").textContent = `${p}%`;
     
-    document.getElementById("completionPercent").textContent = `${percentage}%`;
-    handleStreakUpdate(percentage);
-}
-
-function handleStreakUpdate(pct) {
-    let streak = JSON.parse(localStorage.getItem(STORAGE_KEYS.STREAK)) || { count: 0, lastDate: "" };
-    
-    // Increase streak if 80% completion reached and not already counted today
-    if (pct >= 80 && streak.lastDate !== TODAY_DATE_STR) {
-        streak.count++;
-        streak.lastDate = TODAY_DATE_STR;
-        localStorage.setItem(STORAGE_KEYS.STREAK, JSON.stringify(streak));
-        document.getElementById("streakCount").textContent = streak.count;
+    let s = JSON.parse(localStorage.getItem(KEYS.STREAK)) || { count: 0, last: "" };
+    if (p >= 80 && s.last !== ISO_TODAY) {
+        s.count++;
+        s.last = ISO_TODAY;
+        localStorage.setItem(KEYS.STREAK, JSON.stringify(s));
+        document.getElementById("valStreak").textContent = s.count;
     }
 }
 
-function initializeEnergyAndReflection() {
-    const energy = localStorage.getItem(STORAGE_KEYS.ENERGY_PREFIX + TODAY_DATE_STR) || 50;
-    const slider = document.getElementById("energySlider");
-    slider.value = energy;
-    document.getElementById("energyValueText").textContent = `${energy}%`;
-
-    const reflection = localStorage.getItem(STORAGE_KEYS.REFLECTION_PREFIX + TODAY_DATE_STR) || "";
-    document.getElementById("reflectionTextArea").value = reflection;
+function handleEnergy() {
+    const v = document.getElementById("sliderEnergy").value;
+    document.getElementById("labelEnergy").textContent = `${v}%`;
+    localStorage.setItem(KEYS.ENERGY + ISO_TODAY, v);
 }
 
-function updateEnergyDisplay() {
-    const val = document.getElementById("energySlider").value;
-    document.getElementById("energyValueText").textContent = `${val}%`;
-    localStorage.setItem(STORAGE_KEYS.ENERGY_PREFIX + TODAY_DATE_STR, val);
+function handleReflection() {
+    localStorage.setItem(KEYS.REFL + ISO_TODAY, document.getElementById("areaReflection").value);
 }
 
-function saveReflection() {
-    const text = document.getElementById("reflectionTextArea").value;
-    localStorage.setItem(STORAGE_KEYS.REFLECTION_PREFIX + TODAY_DATE_STR, text);
-}
-
-/** * MEDICAL TAB LOGIC
+/** * TAB LOGIC
  */
 
-function renderMedicalTab() {
-    const medData = JSON.parse(localStorage.getItem(STORAGE_KEYS.MEDICAL));
-    const nameDisplay = document.getElementById("activeConditionName");
-    const latestDisplay = document.getElementById("activeConditionLatest");
+function switchTab(btn) {
+    const target = btn.dataset.tab;
+    document.querySelectorAll(".nav-item").forEach(i => i.classList.remove("active"));
+    document.querySelectorAll(".app-tab").forEach(t => t.classList.add("hidden"));
 
-    if (!medData) {
-        nameDisplay.textContent = "No data tracked";
-        latestDisplay.textContent = "Complete onboarding to start.";
-        return;
-    }
+    btn.classList.add("active");
+    document.getElementById(target).classList.remove("hidden");
 
-    nameDisplay.textContent = medData.name;
-    latestDisplay.textContent = `Latest: ${medData.history[0].value}`;
-
-    initOrUpdateChart(medData);
+    if (target === "tabMedical") renderMedChart();
+    if (target === "tabCalendar") initHeatmap();
 }
 
-function initOrUpdateChart(data) {
-    const ctx = document.getElementById("healthHistoryChart").getContext("2d");
-    
-    // Sort history by date for chart (oldest to newest)
-    const sortedHistory = [...data.history].reverse();
-    const labels = sortedHistory.map(h => h.date);
-    const values = sortedHistory.map(h => parseFloat(h.value) || 0);
+function renderMedChart() {
+    const data = JSON.parse(localStorage.getItem(KEYS.MED));
+    if (!data) return;
 
-    if (healthChartInstance) healthChartInstance.destroy();
+    document.getElementById("medNameLabel").textContent = data.title;
+    document.getElementById("medLatestLabel").textContent = `Latest: ${data.log[0].val}`;
 
-    healthChartInstance = new Chart(ctx, {
+    const ctx = document.getElementById("healthChart").getContext("2d");
+    const history = [...data.log].reverse();
+
+    if (activeChart) activeChart.destroy();
+    activeChart = new Chart(ctx, {
         type: 'line',
         data: {
-            labels: labels,
+            labels: history.map(h => h.day),
             datasets: [{
-                label: data.name,
-                data: values,
+                data: history.map(h => parseFloat(h.val) || 0),
                 borderColor: '#4cc9f0',
-                backgroundColor: 'rgba(76, 201, 240, 0.1)',
-                fill: true,
-                tension: 0.4
+                tension: 0.4,
+                fill: false
             }]
         },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: { legend: { display: false } },
-            scales: {
-                y: { grid: { color: '#222' }, ticks: { color: '#888' } },
-                x: { grid: { display: false }, ticks: { color: '#888' } }
-            }
-        }
+        options: { plugins: { legend: { display: false } }, scales: { y: { grid: { color: '#222' } }, x: { grid: { display: false } } } }
     });
 }
 
-function addNewReading() {
-    const input = document.getElementById("newReadingInput");
-    const val = input.value.trim();
-    if (!val) return;
+function pushMedValue() {
+    const v = document.getElementById("inputNewMedVal").value;
+    if (!v) return;
 
-    let medData = JSON.parse(localStorage.getItem(STORAGE_KEYS.MEDICAL));
-    if (!medData) return;
-
-    // Add to start of array (newest first)
-    medData.history.unshift({ date: new Date().toLocaleDateString(), value: val });
-    localStorage.setItem(STORAGE_KEYS.MEDICAL, JSON.stringify(medData));
+    let med = JSON.parse(localStorage.getItem(KEYS.MED));
+    med.log.unshift({ day: new Date().toLocaleDateString(), val: v });
+    localStorage.setItem(KEYS.MED, JSON.stringify(med));
     
-    input.value = "";
-    renderMedicalTab();
+    document.getElementById("inputNewMedVal").value = "";
+    renderMedChart();
 }
 
-/** * CONSISTENCY TAB LOGIC
- */
-
-function renderHeatmap() {
+function initHeatmap() {
     const grid = document.getElementById("heatmapGrid");
     grid.innerHTML = "";
-
-    // Generate last 28 days
     for (let i = 27; i >= 0; i--) {
-        const d = new Date();
-        d.setDate(d.getDate() - i);
-        const dateKey = d.toISOString().split("T")[0];
-        
-        const completions = JSON.parse(localStorage.getItem(STORAGE_KEYS.FLOW_PREFIX + dateKey)) || [];
-        const count = completions.length;
-
+        const d = new Date(); d.setDate(d.getDate() - i);
+        const key = d.toISOString().split("T")[0];
+        const count = (JSON.parse(localStorage.getItem(KEYS.FLOW + key)) || []).length;
         const cell = document.createElement("div");
-        cell.style.height = "40px";
-        cell.style.borderRadius = "6px";
-        
-        // Intensity levels
-        if (count >= 4) cell.style.background = "#4cc9f0";
-        else if (count >= 1) cell.style.background = "#1a3a4a";
-        else cell.style.background = "#111";
-
+        cell.style.height = "40px"; cell.style.borderRadius = "6px";
+        cell.style.background = count >= 4 ? "#4cc9f0" : count >= 1 ? "#1a3a4a" : "#111";
         grid.appendChild(cell);
     }
-}
-
-/** * NAVIGATION LOGIC
- */
-
-function switchTab(clickedBtn) {
-    const targetTabId = clickedBtn.dataset.target;
-
-    // Update Nav UI
-    document.querySelectorAll(".nav-item").forEach(btn => btn.classList.remove("active"));
-    clickedBtn.classList.add("active");
-
-    // Update Content UI
-    document.querySelectorAll(".content-tab").forEach(tab => tab.classList.add("hidden"));
-    document.getElementById(targetTabId).classList.remove("hidden");
-
-    // Trigger tab-specific renders
-    if (targetTabId === "tabMedical") renderMedicalTab();
-    if (targetTabId === "tabCalendar") renderHeatmap();
 }

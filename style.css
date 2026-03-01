@@ -1,105 +1,92 @@
 :root {
-    --bg-color: #000000;
-    --card-bg: #0d0d0d;
-    --accent-color: #4cc9f0;
-    --text-primary: #ffffff;
-    --text-muted: #888888;
-    --border-color: #1a1a1a;
-    --input-bg: #181818;
+    --black: #000000;
+    --dark-grey: #0b0b0b;
+    --accent: #4cc9f0;
+    --white: #ffffff;
+    --muted: #888888;
+    --card-border: #1a1a1a;
 }
 
 body {
     margin: 0;
-    background-color: var(--bg-color);
-    color: var(--text-primary);
+    background-color: var(--black);
+    color: var(--white);
     font-family: -apple-system, system-ui, sans-serif;
-    overflow-x: hidden;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
 }
 
 .hidden { display: none !important; }
-.muted-text { color: var(--text-muted); font-size: 0.9rem; }
+.muted-text { color: var(--muted); font-size: 0.9rem; }
 
-/* Onboarding UI */
+/* Onboarding */
 .overlay {
     position: fixed;
     inset: 0;
-    background: var(--bg-color);
+    background: var(--black);
     display: flex;
     justify-content: center;
     align-items: center;
-    z-index: 9999;
+    z-index: 2000;
 }
 
 .modal {
-    background: #111111;
-    padding: 30px;
+    background: #111;
     width: 85%;
     max-width: 400px;
-    border-radius: 25px;
-    border: 1px solid var(--border-color);
+    padding: 30px;
+    border-radius: 24px;
+    border: 1px solid var(--card-border);
 }
 
-.brand-title {
-    margin: 0;
-    font-size: 2rem;
-    color: var(--accent-color);
-    text-align: center;
-}
+.brand { text-align: center; color: var(--accent); font-size: 2.2rem; margin: 0; }
+.subtitle { text-align: center; margin-bottom: 25px; color: var(--muted); }
 
-.step-subtitle {
-    text-align: center;
-    margin-bottom: 25px;
-}
-
-.input-container label {
+.form-group label {
     display: block;
     margin-top: 15px;
     font-size: 0.8rem;
-    color: var(--text-muted);
+    color: var(--muted);
 }
 
-input[type="text"], 
-input[type="number"], 
-input[type="email"], 
-textarea {
+input, textarea {
     width: 100%;
     padding: 14px;
-    margin-top: 5px;
-    background: var(--input-bg);
-    border: 1px solid var(--border-color);
+    margin-top: 6px;
+    background: #181818;
+    border: 1px solid var(--card-border);
     border-radius: 12px;
     color: white;
-    font-size: 1rem;
     box-sizing: border-box;
 }
 
-.custom-file-upload {
+.photo-upload-label {
     display: block;
     margin-top: 20px;
     padding: 12px;
     text-align: center;
     background: #222;
+    border: 1px dashed var(--muted);
     border-radius: 12px;
     cursor: pointer;
-    border: 1px dashed var(--text-muted);
 }
 
-.custom-file-upload input { display: none; }
+.photo-upload-label input { display: none; }
 
-.primary-btn {
+.action-btn {
     width: 100%;
     padding: 16px;
     margin-top: 30px;
-    background: var(--accent-color);
+    background: var(--accent);
+    color: black;
+    font-weight: bold;
     border: none;
     border-radius: 14px;
-    font-weight: bold;
-    font-size: 1rem;
     cursor: pointer;
 }
 
-/* App Layout */
-.app-container {
+/* App Header */
+.main-app {
     max-width: 450px;
     margin: 0 auto;
     padding: 20px 20px 100px;
@@ -112,96 +99,69 @@ textarea {
     margin-bottom: 30px;
 }
 
-.date-text { margin: 4px 0 0; color: var(--text-muted); }
-
-.profile-avatar {
+.user-avatar {
     width: 55px;
     height: 55px;
     border-radius: 50%;
     object-fit: cover;
-    border: 2px solid var(--accent-color);
-    background: #222;
+    border: 2px solid var(--accent);
 }
 
-/* Feature Cards */
-.feature-card {
-    background: var(--card-bg);
+/* Dashboard Cards */
+.feature-block {
+    background: var(--dark-grey);
     padding: 20px;
     border-radius: 20px;
     margin-bottom: 20px;
-    border: 1px solid var(--border-color);
+    border: 1px solid var(--card-border);
 }
 
-.quote-card {
-    background: linear-gradient(135deg, #1a1a1a, #000);
+.quote-container {
+    background: linear-gradient(135deg, #111, #000);
     padding: 20px;
-    border-radius: 18px;
-    border-left: 5px solid var(--accent-color);
-    margin-bottom: 25px;
-    font-style: italic;
-}
-
-.status-overview {
-    display: flex;
-    gap: 15px;
+    border-radius: 15px;
+    border-left: 5px solid var(--accent);
     margin-bottom: 25px;
 }
 
-.metric-box {
+.metrics-row { display: flex; gap: 15px; margin-bottom: 20px; }
+.metric-card {
     flex: 1;
-    background: var(--card-bg);
+    background: var(--dark-grey);
     padding: 15px;
     border-radius: 18px;
     text-align: center;
-    border: 1px solid var(--border-color);
+    border: 1px solid var(--card-border);
 }
 
-.metric-value { font-size: 1.4rem; font-weight: bold; display: block; }
-.metric-label { font-size: 0.8rem; color: var(--text-muted); }
+.m-val { font-size: 1.5rem; font-weight: bold; display: block; }
+.m-lab { font-size: 0.8rem; color: var(--muted); }
 
-/* Flow List */
-.flow-item {
+/* Flow */
+.flow-box {
     padding: 15px;
     background: #141414;
     border-radius: 12px;
     margin-top: 10px;
     cursor: pointer;
-    transition: 0.2s;
+    transition: 0.3s;
 }
 
-.flow-item.completed {
-    background: rgba(76, 201, 240, 0.15);
-    border-left: 4px solid var(--accent-color);
-}
-
-/* Slider */
-#energySlider { width: 100%; margin: 15px 0; accent-color: var(--accent-color); }
-.slider-labels { display: flex; justify-content: space-between; color: var(--text-muted); font-size: 0.8rem; }
-
-/* Chart & Medical */
-.chart-wrapper { height: 200px; margin: 20px 0; }
-.inline-input { display: flex; gap: 10px; margin-top: 10px; }
-.inline-input button {
-    background: var(--accent-color);
-    border: none;
-    border-radius: 10px;
-    padding: 0 20px;
-    font-weight: bold;
+.flow-box.active-done {
+    background: rgba(76, 201, 240, 0.1);
+    border-left: 4px solid var(--accent);
 }
 
 /* Heatmap */
-.heatmap-container {
+.heatmap {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
     gap: 8px;
-    margin: 20px 0;
+    margin-top: 10px;
 }
 
-.heatmap-legend { display: flex; align-items: center; justify-content: flex-end; gap: 5px; font-size: 0.7rem; }
-.legend-dot { width: 10px; height: 10px; border-radius: 2px; }
-
-/* Nav Bar */
-.nav-bar {
+/* Bottom Nav */
+.bottom-nav {
     position: fixed;
     bottom: 0;
     left: 50%;
@@ -210,10 +170,10 @@ textarea {
     max-width: 450px;
     height: 75px;
     background: rgba(0,0,0,0.9);
-    border-top: 1px solid var(--border-color);
     display: flex;
     justify-content: space-around;
     align-items: center;
+    border-top: 1px solid var(--card-border);
     backdrop-filter: blur(10px);
 }
 
@@ -222,8 +182,17 @@ textarea {
     border: none;
     font-size: 1.6rem;
     color: #444;
-    cursor: pointer;
-    transition: 0.3s;
 }
 
-.nav-item.active { color: var(--accent-color); }
+.nav-item.active { color: var(--accent); }
+
+/* Medical Chart */
+.canvas-holder { height: 200px; margin: 15px 0; }
+.entry-flex { display: flex; gap: 10px; margin-top: 10px; }
+.entry-flex button {
+    background: var(--accent);
+    border: none;
+    padding: 0 20px;
+    border-radius: 10px;
+    font-weight: bold;
+}
